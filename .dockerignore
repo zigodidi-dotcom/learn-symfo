@@ -1,0 +1,8 @@
+/vendor/
+/var/
+/public/assets/
+/assets/vendor/
+/.env.local
+/.env.*.local
+/.github/
+*.log
