@@ -1,11 +1,5 @@
 [build]
 builder = "nixpacks"
-buildCommand = """
-composer install --no-dev --optimize-autoloader --no-scripts && \
-php bin/console importmap:install && \
-php bin/console assets:install && \
-php bin/console cache:clear --no-warmup
-"""
 
 [deploy]
 startCommand = "php bin/console doctrine:migrations:migrate --no-interaction && php -S 0.0.0.0:$PORT -t public/"
