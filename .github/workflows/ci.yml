@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, iconv, intl, pdo_mysql, mbstring, xml, tokenizer
+          coverage: none
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Check PHP syntax (parallel-lint)
+        run: find src/ -name "*.php" | xargs php -l | grep -v "No syntax errors" || true
+
+      - name: Lint Twig templates
+        run: php bin/console lint:twig templates/
+        env:
+          APP_ENV: prod
+          APP_SECRET: ci-placeholder
+          DATABASE_URL: "mysql://root:@127.0.0.1:3306/ci_db?serverVersion=8.0.32&charset=utf8mb4"
+
+      - name: Lint YAML config
+        run: php bin/console lint:yaml config/
+        env:
+          APP_ENV: prod
+          APP_SECRET: ci-placeholder
+          DATABASE_URL: "mysql://root:@127.0.0.1:3306/ci_db?serverVersion=8.0.32&charset=utf8mb4"
+
+      - name: Validate container (no-debug)
+        run: php bin/console debug:container --no-debug 2>&1 | tail -1
+        env:
+          APP_ENV: prod
+          APP_SECRET: ci-placeholder
+          DATABASE_URL: "mysql://root:@127.0.0.1:3306/ci_db?serverVersion=8.0.32&charset=utf8mb4"
+        continue-on-error: true

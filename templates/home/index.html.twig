@@ -1,0 +1,232 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Symfony 8 · CheatSheet{% endblock %}
+
+{% block body %}
+<div class="app" id="app">
+
+    {# ═══════════════════════════════════════════════════════ SIDEBAR #}
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <span class="brand-icon">⚡</span>
+                <span class="brand-text">Symfony 8</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle" title="Réduire le menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            {# Vue d'ensemble #}
+            <button class="nav-item nav-item--all active" data-filter="all">
+                <span class="nav-icon">🗂️</span>
+                <span class="nav-label">Toutes les features</span>
+                <span class="nav-count">{{ categories|map(c => c.features|length)|reduce((carry, v) => carry + v, 0) }}</span>
+            </button>
+
+            {# Glossaire #}
+            <button class="nav-item nav-item--glossary" data-filter="glossary">
+                <span class="nav-icon">📖</span>
+                <span class="nav-label">Glossaire</span>
+                <span class="nav-count">{{ terms|length }}</span>
+            </button>
+
+            <div class="nav-divider"></div>
+            <div class="nav-section-title">Catégories</div>
+
+            {% for category in categories %}
+            <div class="nav-category" data-category="{{ category.slug }}">
+                <button class="nav-item" data-filter="{{ category.slug }}">
+                    <span class="nav-icon">{{ category.icon }}</span>
+                    <span class="nav-label">{{ category.name }}</span>
+                    <span class="nav-count">{{ category.features|length }}</span>
+                </button>
+            </div>
+            {% endfor %}
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="theme-toggle" id="themeToggle" title="Mode sombre">
+                <span class="theme-icon theme-icon--light">☀️</span>
+                <span class="theme-icon theme-icon--dark">🌙</span>
+                <span class="nav-label">Mode sombre</span>
+            </button>
+        </div>
+    </aside>
+
+    {# ═══════════════════════════════════════════════════════ MAIN #}
+    <div class="main-wrapper">
+
+        {# ─── TOP BAR ─── #}
+        <header class="topbar">
+            <button class="topbar-menu-btn" id="mobileMenuBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+
+            <div class="search-bar" id="searchBar">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" class="search-input" id="searchInput" placeholder="Rechercher une feature, un terme… (⌘K)">
+                <kbd class="search-kbd">⌘K</kbd>
+            </div>
+
+            <div class="topbar-right">
+                <a href="/api" class="topbar-link" target="_blank" title="API Swagger">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    API
+                </a>
+            </div>
+        </header>
+
+        {# ─── CONTENT ─── #}
+        <main class="main-content" id="mainContent">
+
+            {# ── VUE TOUTES FEATURES ── #}
+            <div class="view" id="view-all">
+                <div class="page-hero">
+                    <h1 class="page-title">Symfony 8 <span class="page-title-accent">CheatSheet</span></h1>
+                    <p class="page-subtitle">{{ categories|length }} catégories · {{ categories|map(c => c.features|length)|reduce((carry, v) => carry + v, 0) }} features · {{ terms|length }} termes du glossaire</p>
+                </div>
+
+                {% for category in categories %}
+                {% if category.features|length > 0 %}
+                <section class="category-section" id="cat-{{ category.slug }}" data-category="{{ category.slug }}">
+                    <div class="category-header" style="--cat-color: {{ category.color }}">
+                        <span class="category-header-icon">{{ category.icon }}</span>
+                        <div>
+                            <h2 class="category-header-title">{{ category.name }}</h2>
+                            {% if category.description %}
+                            <p class="category-header-desc">{{ category.description }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="category-header-count">{{ category.features|length }}</span>
+                    </div>
+
+                    <div class="features-grid">
+                        {% for feature in category.features %}
+                        <article class="feature-card"
+                                 id="feature-{{ feature.slug }}"
+                                 data-slug="{{ feature.slug }}"
+                                 data-name="{{ feature.name|lower }}"
+                                 data-desc="{{ feature.description|lower }}"
+                                 data-category="{{ category.slug }}">
+                            <div class="feature-card-header">
+                                <div class="feature-meta">
+                                    <span class="badge badge--{{ feature.difficulty.value }}">{{ feature.difficulty.value }}</span>
+                                    <span class="badge badge--type">{{ feature.type.value }}</span>
+                                    {% if feature.sinceVersion %}
+                                    <span class="badge badge--since">{{ feature.sinceVersion }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if feature.tags|length > 0 %}
+                                <div class="feature-tags">
+                                    {% for tag in feature.tags %}
+                                    <span class="tag" style="--tag-color: {{ tag.color }}">{{ tag.name }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <h3 class="feature-title">{{ feature.name }}</h3>
+                            <p class="feature-desc">{{ feature.description }}</p>
+
+                            {% if feature.examples|length > 0 %}
+                            <div class="feature-examples">
+                                {% for example in feature.examples %}
+                                <details class="code-block">
+                                    <summary class="code-block-header">
+                                        <span class="code-lang code-lang--{{ example.language.value }}">{{ example.language.value }}</span>
+                                        <span class="code-title">{{ example.title }}</span>
+                                        <svg class="code-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                                    </summary>
+                                    {% if example.description %}
+                                    <p class="code-desc">{{ example.description }}</p>
+                                    {% endif %}
+                                    <pre class="code-pre"><code class="language-{{ example.language.value }}">{{ example.code }}</code></pre>
+                                </details>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </article>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            {# ── VUE GLOSSAIRE ── #}
+            <div class="view hidden" id="view-glossary">
+                <div class="page-hero">
+                    <h1 class="page-title">Glossaire <span class="page-title-accent">Symfony</span></h1>
+                    <p class="page-subtitle">{{ terms|length }} termes techniques expliqués</p>
+                </div>
+
+                <div class="glossary-grid">
+                    {% for term in terms %}
+                    <div class="term-card" id="term-{{ term.slug }}" data-name="{{ term.name|lower }}">
+                        <h3 class="term-name">{{ term.name }}</h3>
+                        <p class="term-def">{{ term.definition }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    {# ═══════════════════════════════════════════════════════ SEARCH OVERLAY #}
+    <div class="search-overlay hidden" id="searchOverlay">
+        <div class="search-overlay-backdrop" id="searchBackdrop"></div>
+        <div class="search-overlay-panel">
+            <div class="search-overlay-input-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" class="search-overlay-input" id="searchOverlayInput" placeholder="Rechercher une feature, un terme, une catégorie…" autocomplete="off">
+                <button class="search-overlay-close" id="searchOverlayClose">
+                    <kbd>Échap</kbd>
+                </button>
+            </div>
+
+            <div class="search-results" id="searchResults">
+                <div class="search-hint">
+                    <span>💡</span> Tapez pour rechercher parmi <strong>{{ categories|map(c => c.features|length)|reduce((carry, v) => carry + v, 0) }}</strong> features et <strong>{{ terms|length }}</strong> termes
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{# ═══════════════════════════════════════════════════ DATA JSON pour la recherche JS #}
+<script id="appData" type="application/json">
+{
+    "features": [
+        {% for category in categories %}
+        {% for feature in category.features %}
+        {
+            "id": {{ feature.id }},
+            "name": {{ feature.name|json_encode|raw }},
+            "slug": {{ feature.slug|json_encode|raw }},
+            "description": {{ feature.description|slice(0, 200)|json_encode|raw }},
+            "category": {{ category.slug|json_encode|raw }},
+            "categoryName": {{ category.name|json_encode|raw }},
+            "categoryIcon": {{ category.icon|json_encode|raw }},
+            "categoryColor": {{ category.color|json_encode|raw }},
+            "difficulty": {{ feature.difficulty.value|json_encode|raw }},
+            "type": {{ feature.type.value|json_encode|raw }}
+        }{% if not loop.last or not loop.parent.loop.last %},{% endif %}
+        {% endfor %}
+        {% endfor %}
+    ],
+    "terms": [
+        {% for term in terms %}
+        {
+            "name": {{ term.name|json_encode|raw }},
+            "slug": {{ term.slug|json_encode|raw }},
+            "definition": {{ term.definition|slice(0, 200)|json_encode|raw }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+}
+</script>
+{% endblock %}
