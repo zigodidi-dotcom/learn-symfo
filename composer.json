@@ -1,4 +1,6 @@
 {
+    "name": "app/learn-symfo",
+    "description": "Symfony 8.1 cheat sheet — référence exhaustive des features",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
