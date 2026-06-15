@@ -26,7 +26,8 @@ ARG DATABASE_URL="sqlite:///:memory:"
 ENV APP_ENV=prod
 
 RUN php bin/console importmap:install \
- && php bin/console assets:install
+ && php bin/console assets:install \
+ && php bin/console asset-map:compile
 
 RUN chmod +x docker-entrypoint.sh
 
