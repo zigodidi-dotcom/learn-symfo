@@ -1,0 +1,2 @@
+[variables]
+NIXPACKS_INSTALL_CMD = "composer install --no-scripts --ignore-platform-reqs"
