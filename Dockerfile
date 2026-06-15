@@ -18,16 +18,13 @@ RUN COMPOSER_ALLOW_SUPERUSER=1 composer install \
 
 COPY . .
 
-# Build-time only — ARG values are NOT baked into the final image
-# Runtime container gets DATABASE_URL and APP_SECRET from Railway env vars
-ARG APP_SECRET=buildsecret
-ARG DATABASE_URL="sqlite:///:memory:"
-
 ENV APP_ENV=prod
 
-RUN php bin/console importmap:install \
- && php bin/console assets:install \
- && php bin/console asset-map:compile
+# Download vendor JS/CSS from CDNs at build time (assets/vendor/)
+# asset-map:compile runs at startup so the cache is always fresh
+ARG APP_SECRET=buildsecret
+ARG DATABASE_URL="sqlite:///:memory:"
+RUN php bin/console importmap:install
 
 RUN chmod +x docker-entrypoint.sh
 

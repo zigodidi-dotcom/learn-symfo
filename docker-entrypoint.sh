@@ -1,17 +1,17 @@
 #!/bin/sh
 set -e
 
-# Start server immediately so Railway's healthcheck passes
-php -S 0.0.0.0:${PORT:-8000} -t public/ &
-SERVER_PID=$!
+echo "[boot] Clearing and rebuilding cache..."
+php bin/console cache:clear
 
-# Give the server 2 s to bind to the port before running migrations
-sleep 2
+echo "[boot] Installing bundle assets..."
+php bin/console assets:install
 
-echo "Running migrations..."
-php bin/console doctrine:migrations:migrate --no-interaction \
-  && echo "Migrations OK" \
-  || echo "Migration failed — check logs"
+echo "[boot] Compiling asset map..."
+php bin/console asset-map:compile
 
-# Keep container alive until the server process exits
-wait $SERVER_PID
+echo "[boot] Running migrations..."
+php bin/console doctrine:migrations:migrate --no-interaction
+
+echo "[boot] Starting PHP server on :${PORT:-8000}"
+exec php -S 0.0.0.0:${PORT:-8000} -t public/
