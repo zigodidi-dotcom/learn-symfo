@@ -1,7 +1,7 @@
 FROM php:8.4-cli-alpine
 
 RUN apk add --no-cache git unzip curl icu-dev oniguruma-dev libxml2-dev \
- && docker-php-ext-install pdo_mysql intl mbstring xml ctype iconv tokenizer
+ && docker-php-ext-install pdo_mysql intl mbstring xml
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
